@@ -1,3 +1,4 @@
+// Check whether a number is even or odd using boolean function
 #include<iostream>
 #include<cctype>
 using namespace std;

@@ -1,3 +1,4 @@
+// Demonstration of null pointer safety in C++
 #include<iostream>
 #include<iomanip>
 using namespace std;

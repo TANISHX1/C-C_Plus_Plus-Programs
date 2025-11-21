@@ -1,3 +1,4 @@
+// Demonstration of arithmetic operations on short int and char types in C++
 #include<iostream>
 using namespace std;
 

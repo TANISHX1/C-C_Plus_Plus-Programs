@@ -1,3 +1,4 @@
+// Demonstration of basic pointer usage in C++
 #include<iostream>
 using namespace std;
 

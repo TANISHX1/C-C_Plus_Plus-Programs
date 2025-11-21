@@ -1,3 +1,4 @@
+// Demonstration of arithmetic related functions from cmath library
 #include<iostream>
 #include<cmath>
 using namespace std;

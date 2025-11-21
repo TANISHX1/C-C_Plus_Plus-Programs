@@ -1,3 +1,4 @@
+// Demonstration of dynamic memory allocation using 'new' and 'delete' in C++
 #include<iostream>
 #include<iomanip>
 using namespace std;

@@ -1,3 +1,4 @@
+// Demonstration of precision and special floating-point values in C++
 #include <iostream>
 #include <iomanip>
 using namespace std;

@@ -1,3 +1,4 @@
+// Demonstration of pointer to string literal in C++
 #include<iostream>
 using namespace std;
 int main(){
