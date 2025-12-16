@@ -1,0 +1,103 @@
+dog: A popular pet that barks and wags its tail
+chair: A piece of furniture designed for sitting
+sun: The bright star that provides light and warmth to Earth
+car: A motor vehicle used for transportation
+fish: An aquatic animal that breathes through gills
+cup: A small container used for drinking beverages
+book: A collection of written pages bound together
+tree: A tall woody plant with branches and leaves
+phone: An electronic device used for communication
+house: A building where people live
+bird: A feathered animal that can fly
+water: A clear liquid essential for life
+apple: A round red or green fruit that grows on trees
+computer: An electronic machine for processing data
+shoes: Footwear worn to protect and comfort feet
+table: A flat surface supported by legs for placing items
+flower: A colorful part of a plant that blooms
+mountain: A large natural elevation of land
+ocean: A vast body of salt water covering Earth
+moon: The natural satellite that orbits Earth
+clock: A device that shows the current time
+pencil: A writing instrument with graphite core
+window: An opening in a wall covered with glass
+bicycle: A two-wheeled vehicle powered by pedaling
+kitchen: A room where food is prepared and cooked
+television: An electronic device for watching programs
+guitar: A stringed musical instrument played by strumming
+camera: A device used to capture photographs
+pillow: A soft cushion used to support the head while sleeping
+lamp: A device that produces artificial light
+garden: An area where plants and flowers are cultivated
+bridge: A structure built to span over obstacles
+library: A building containing collections of books
+pizza: A flat bread topped with cheese and other ingredients
+rainbow: A colorful arc that appears in the sky after rain
+elephant: A large gray mammal with a long trunk
+butterfly: A colorful insect with delicate wings
+volcano: A mountain that can erupt with lava and ash
+diamond: A precious gemstone known for its brilliance
+rocket: A spacecraft designed to travel into space
+sandwich: Food consisting of ingredients between slices of bread
+lighthouse: A tall tower with a bright light to guide ships
+piano: A large musical instrument with black and white keys
+spider: An eight-legged creature that spins webs
+castle: A large fortified building from medieval times
+telescope: An instrument used to observe distant objects
+waterfall: Water cascading down from a height
+mushroom: A fungus that grows from the ground
+tornado: A violent rotating column of air
+treasure: Valuable items like gold coins and jewels
+dragon: A mythical creature that breathes fire
+robot: A mechanical being programmed to perform tasks
+balloon: An inflatable object filled with air or gas
+scissors: A cutting tool with two sharp blades
+mirror: A reflective surface that shows your image
+banana: A yellow curved fruit that monkeys love
+hammer: A tool used for hitting nails into wood
+cloud: A fluffy white mass floating in the sky
+fire: Hot flames that produce light and heat
+ice: Frozen water that is cold and slippery
+knife: A sharp blade used for cutting food
+bottle: A container used to hold liquids
+candle: A wax stick with a wick that burns for light
+basket: A woven container used for carrying items
+door: A movable barrier that opens and closes rooms
+key: A metal object used to unlock doors
+star: A bright celestial object that twinkles in space
+cheese: A dairy product made from milk
+bread: A baked food made from flour and water
+egg: An oval object laid by birds that can be cooked
+milk: A white liquid produced by cows and other mammals
+honey: A sweet sticky substance made by bees
+cake: A sweet baked dessert often served at celebrations
+ice cream: A frozen sweet treat available in many flavors
+chocolate: A sweet brown confection made from cocoa beans
+coffee: A hot beverage made from roasted coffee beans
+tea: A warm drink made by steeping leaves in hot water
+orange: A citrus fruit that is round and orange colored
+grape: Small round fruits that grow in bunches on vines
+strawberry: A red heart-shaped berry with tiny seeds
+carrot: An orange root vegetable that rabbits enjoy
+potato: A starchy vegetable that grows underground
+tomato: A red round fruit often used in cooking
+onion: A layered vegetable that makes you cry when cut
+lettuce: Green leafy vegetable commonly used in salads
+corn: Yellow kernels that grow on a cob
+rice: Small white grains that are a staple food
+pasta: Italian food made from wheat and shaped in various forms
+soup: A liquid dish made by boiling ingredients together
+hamburger: A sandwich with a meat patty between buns
+hotdog: A sausage served in a long bun
+french fries: Thin strips of fried potato
+popcorn: Corn kernels that puff up when heated
+candy: Sweet treats that come in various colors and flavors
+cookie: A small sweet baked treat often eaten as dessert
+donut: A ring-shaped fried pastry often covered in glaze
+pretzel: A twisted baked snack often sprinkled with salt
+chips: Thin crispy slices of fried potato
+nuts: Hard-shelled seeds or fruits that are edible
+raisins: Dried grapes that are sweet and chewy
+cereal: Breakfast food usually eaten with milk
+pancake: A flat round cake cooked on a griddle
+waffle: A breakfast food with square patterns and syrup
