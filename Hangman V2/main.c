@@ -61,7 +61,7 @@ int main()
 
         if (guessedletter[tolower(guess) - 'a'])
             {
-            printf("%s%sYou've already guessed that letter. Try again.%s\n",FG_BMAGENTA,ITALIC,RESET);
+            printf("%s%sYou've already guessed that letter. Try again.%s\n", FG_BMAGENTA, ITALIC, RESET);
             continue;
             }
 
@@ -77,22 +77,22 @@ int main()
                 }
             }
         if (found)
-            printf("%sGood guess!\n%s",FG_GREEN,RESET);
+            printf("%sGood guess!\n%s", FG_GREEN, RESET);
 
         else
             {
-            printf("%s%sSorry the letter '%c' is not in the secret Word\n%s",FG_RED,ITALIC, guess,RESET);
+            printf("%s%sSorry the letter '%c' is not in the secret Word\n%s", FG_RED, ITALIC, guess, RESET);
             tries++;
             }
         if (strcmp(secretword, guessedword) == 0)
             {
-            printf("\n%s%sCongratulations! You've guessed the word: %s%s\n",FG_CYAN,BOLD, secretword,RESET);
+            printf("\n%s%sCongratulations! You've guessed the word: %s%s\n", FG_CYAN, BOLD, secretword, RESET);
             break;
             }
         }
     if (tries >= MAX_TRIES)
         {
-        printf("\n%sSorry ,you've run out of tries.the word was: %s%s%s%s\n",FG_BRED,FG_BBLUE,UNDERLINE ,secretword,RESET);
+        printf("\n%sSorry ,you've run out of tries.the word was: %s%s%s%s\n", FG_BRED, FG_BBLUE, UNDERLINE, secretword, RESET);
         }
 
     return 0;

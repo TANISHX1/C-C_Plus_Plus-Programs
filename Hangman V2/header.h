@@ -42,6 +42,10 @@
 #define FG_BCYAN    "\033[96m"
 #define FG_BWHITE   "\033[97m"
 
+// Helper varibles
+// moves cursor by n lines up 
+__uint8_t cursor_move_up = 4;
+
 // struct to hold a word and its hint
 typedef struct hidden_word
     {
