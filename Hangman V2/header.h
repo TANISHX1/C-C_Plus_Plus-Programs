@@ -51,27 +51,31 @@
 
 // Helper varibles
 // moves cursor by n lines up 
-__uint8_t cursor_move_up = 4;
+__uint8_t cursor_move_up = 3;
 
 // line cleaner function
 void clean_n_lines_up(__int8_t lines)
     {
-    printf("\x1B[2K\r");
+    if (lines <= 0) {
+        return;
+        }
+    printf("\r\x1B[2K");
     for (; lines >= 0; lines--)
         {
-        printf("\x1B[1A");
-        printf("\x1B[1K");
-        }
+        printf("\x1B[1A"); // \x1B[1A: Moves cursor up one line
+        printf("\x1B[2K"); // \x1B[2K: Clears the entire line
 
+        }
+    fflush(stdout);
     }
 
 // time freeze
 void time_freeze(int seconds)
     {
 #ifdef _WIN32
-    Sleep(time * 1000);
+    Sleep(seconds * 1000);
 #else
-    sleep(time);
+    sleep(seconds);
 #endif
     }
 
