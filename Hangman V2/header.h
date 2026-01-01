@@ -5,6 +5,13 @@
 #include <string.h>
 #include <time.h>
 
+// cross Platform Compatibility
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #define MAX_WORD_LENGTH 10
 #define MAX_WORD_HINT_LEN 80
 #define MAX_TRIES 6
@@ -45,6 +52,28 @@
 // Helper varibles
 // moves cursor by n lines up 
 __uint8_t cursor_move_up = 4;
+
+// line cleaner function
+void clean_n_lines_up(__int8_t lines)
+    {
+    printf("\x1B[2K\r");
+    for (; lines >= 0; lines--)
+        {
+        printf("\x1B[1A");
+        printf("\x1B[1K");
+        }
+
+    }
+
+// time freeze
+void time_freeze(int seconds)
+    {
+#ifdef _WIN32
+    Sleep(time * 1000);
+#else
+    sleep(time);
+#endif
+    }
 
 // struct to hold a word and its hint
 typedef struct hidden_word
@@ -129,8 +158,8 @@ hidden_word* search(hidden_word* root, int node_id)
     if (found_node != NULL) {
         return found_node;
         }
-    
-        return search(root->right_node, node_id);
-        
+
+    return search(root->right_node, node_id);
+
 
     }

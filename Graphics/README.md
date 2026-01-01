@@ -1,14 +1,20 @@
-g++ grid.cpp -o grid.exe
+# Graphics
 
-# Graphics — Short Program Overview
+This folder contains C/C++ programs demonstrating graphics programming and visual output generation.
 
-Small C/C++ graphics demos using old-style BGI calls (e.g. `graphics.h`). Files in this folder:
+## Contents
 
-- `brick.cpp` — Breakout/brick-breaker demo using BGI drawing primitives.
-- `grid.cpp` — Animated grid / square-diagonal drawing using `putpixel`.
-- `minorII.cpp` — Multi-part demo showing shapes, animations and basic BGI features.
-- `ollee.cpp` — Simple stick-figure animation (patting/head animation).
-- `star.cpp` — Galaxy/starfield animation using many `putpixel` calls and simple physics.
+- **brick.cpp** - Graphics program for rendering brick patterns or brick breaker game
+- **decor.c** - Decorative graphics elements in C
+- **decor** - Compiled/executable version of decor.c
+- **grid.cpp** - Grid generation and display using graphics
+- **minorII.cpp** - Graphics visualization project (Minor II)
+- **ollee.cpp** - Graphics program (possibly for drawing circles or patterns)
+- **star.cpp** - Star pattern or star graphics generation
+- **README.md** - Project documentation
+
+## Purpose
+These programs demonstrate practical applications of graphics rendering, pattern generation, and visual output in C/C++. They may use console-based graphics or graphics libraries for visual representation.
 
 Quick notes (concise):
 
