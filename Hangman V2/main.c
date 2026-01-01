@@ -42,8 +42,8 @@ int main()
         }
     bool guessedletter[26] = { false };
 
-    printf("\t\t\t%s%sWelcome to Hangman (version 2) !!!%s\n\n", FG_BCYAN, BLINK, RESET);
-    printf("%sHint: %s%s\n", FG_GREEN, hint, RESET);
+    printf("\t\t\t%s%s%sWelcome to Hangman (version 2) !!!%s\n\n", FG_BCYAN, BLINK,BOLD, RESET);
+    printf("\t%sHint: %s%s\n", FG_GREEN, hint, RESET);
 
     short int tries = 0;
 
@@ -63,7 +63,7 @@ int main()
             {
             clean_n_lines_up(cursor_move_up);
             printf("%s%sYou've already guessed that letter. Try again.%s\n", FG_BMAGENTA, ITALIC, RESET);
-            time_freeze(2);
+            time_freeze(1);
             clean_n_lines_up(1);
             continue;
             }
@@ -91,12 +91,13 @@ int main()
             {
             clean_n_lines_up(cursor_move_up);
             printf("%s%sSorry the letter '%c' is not in the secret Word%s\n", FG_RED, ITALIC, guess, RESET);
-            time_freeze(2);
+            cursor_move_up++;
+            time_freeze(1);
             clean_n_lines_up(1);
             tries++;
             }
         if (strcmp(secretword, guessedword) == 0)
-            { 
+            {
             printf("\n%s%sCongratulations! You've guessed the word: %s%s\n", FG_CYAN, BOLD, secretword, RESET);
             break;
             }
