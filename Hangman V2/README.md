@@ -86,13 +86,11 @@ gcc -o Debug Debug.c header.h
 ```
 
 ## Game Output Example
-<video width="868" height="362" controls>
-  <source src="data/output.mp4" type="video/mp4">
-</video>
+
+https://github.com/user-attachments/assets/08fd1aae-c331-4730-b63b-b082b3203f4e
 
 
 ## Requirements
----
 - GCC compiler (or compatible C compiler)
 - POSIX-compliant terminal (for ANSI color codes and cursor control)
 - sample.txt file in the same directory as the executable
