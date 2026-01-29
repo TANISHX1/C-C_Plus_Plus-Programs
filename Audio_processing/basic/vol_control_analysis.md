@@ -2,6 +2,8 @@
 
 This document explains the technical logic behind the audio gain control program, focusing on data types, memory management, and audio channel handling.
 
+<img width="1024" height="1536" alt="image" src="https://github.com/user-attachments/assets/f0bec6ac-0a23-40d6-83d0-10f3f7dff4cb" />
+
 ---
 
 ## 1. Why `uint8_t`, `uint16_t`, and `uint32_t`?
