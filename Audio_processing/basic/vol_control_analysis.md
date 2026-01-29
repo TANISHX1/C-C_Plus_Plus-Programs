@@ -75,16 +75,40 @@ We multiply by 2 because one "frame" in stereo contains **two** samples (Left + 
 The `block_align` header field tells us the size of one complete **Frame**.
 
 ```mermaid
-graph TD
-    subgraph "16-bit Stereo Frame (Block Align = 4 bytes)"
-    L["Left Channel (2 bytes / int16_t)"]
-    R["Right Channel (2 bytes / int16_t)"]
+
+graph LR
+    subgraph "Stereo(Block Align = 4Byte)"
+        direction LR
+        subgraph FrameS ["One Stereo Frame"]
+            direction LR
+            L_Sample["Left Sample (int16_t)"]
+            R_Sample["Right Sample (int16_t)"]
+            
+            subgraph L_Bytes ["2 Bytes"]
+                B0[Byte 0]
+                B1[Byte 1]
+            end
+            
+            subgraph R_Bytes ["2 Bytes"]
+                B2[Byte 2]
+                B3[Byte 3]
+            end
+        end
     end
     
-    subgraph "8-bit Mono Frame (Block Align = 1 byte)"
-    M["Mono Channel (1 byte / int8_t)"]
+    L_Bytes --- L_Sample
+    R_Bytes --- R_Sample
+
+    subgraph " Mono (Block Align = 1Byte)"
+        subgraph FrameM ["One Mono Frame"]
+            M_Sample["Mono Sample (int8_t)"]
+            B_Mono[Byte 0]
+        end
     end
+    
+    B_Mono --- M_Sample
 ```
+
 
 - **Frame**: A snapshot of sound at a single point in time across all channels.
 - **Sample**: The individual value for a single channel.
