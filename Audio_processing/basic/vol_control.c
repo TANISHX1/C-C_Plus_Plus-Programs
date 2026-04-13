@@ -22,28 +22,47 @@ Gain >1 -- increase (may cause Clipping , read more)
 
 #define MAX_SAMPLES 10000000
 
-typedef struct
-    {
+typedef struct {
     // RIFF 
     uint8_t riff[4];
     uint32_t file_size;
     uint8_t wave[4];
+    }riff_header_t;
 
+typedef struct
+    {
+    uint8_t chunkid[4];
+    uint32_t chunk_size;
+    }chunk_header_t;
+
+
+typedef struct {
     // FORMAT HEADERS
-    uint8_t fmt[4];
-    uint32_t fmt_size;
     uint16_t audio_format;
     uint16_t audio_channels;
     uint32_t sample_rate;
     uint32_t byte_rate;
     uint16_t block_align;
     uint16_t bits_per_sample;
+    }fmt_chunk_t;
 
-    // DATA CHUNK / BLOCK / PACKET
-    uint8_t data[4];
+typedef struct
+    {
+    riff_header_t riff;
+    fmt_chunk_t fmt;
     uint32_t data_size;
+    uint32_t bytes_to_read;
+    uint32_t data_offset;
     }wav_header_t;
 
+typedef struct 
+{
+    char fmt_chunk_id[4];
+    int fmt_chunk_size;
+    char data_chunk_id[4];
+    } __chunks;
+
+__chunks essential_chunks;
 void clamp_check(float* sample) {
     // Clamp to prevent clipping 
     if (*sample > 32767.0f) *sample = 32767.0f;
@@ -51,20 +70,80 @@ void clamp_check(float* sample) {
     }
 
 // function to read entire .wav file in memory
-int8_t* read_wav_data(const char* filename, wav_header_t* header, size_t* data_size) {
+int8_t* read_wav_data(const char* filename, wav_header_t** header) {
     FILE* file = fopen(filename, "rb");
     if (!file) {
         printf("[%sError%s] : File cannot open or not exist '%s'\n", FG_RED, RESET, filename);
+        return NULL;
         }
 
-    size_t header_read = fread(header, 1, sizeof(wav_header_t), file);
-    if (header_read < 44) {
-        printf("[%sError%s] : Invalid WAV file (file size is to small to read headers)", FG_RED, RESET);
+    *header = (wav_header_t*)calloc(1, sizeof(wav_header_t));
+    if (!*header) {
+        puts("[Error] |Calloc| : Memory Allocation Failed");
+        return NULL;
+        }
+    // Read RIFF HEADER
+    if (fread(&((*header)->riff), 1, sizeof(riff_header_t), file) < sizeof(riff_header_t)) {
+        puts("[Error] : Failed to read RIFF header\n");
+        free(header);
         fclose(file);
         return NULL;
         }
+    if (strncmp((char*)(*header)->riff.riff, "RIFF", 4) != 0 || strncmp((char*)(*header)->riff.wave, "WAVE", 4) != 0) {
+        puts("[Error] : Not a valid WAV file\n");
+        free(*header);
+        fclose(file);
+        return NULL;
+        }
+
+    // Iterate through chunks
+    chunk_header_t chunk;
+    int fmt_found = 0;
+    int data_found = 0;
+
+    // loop to skip unwanted subchunks
+    while (fread(&chunk, 1, sizeof(chunk_header_t), file) == sizeof(chunk_header_t)) {
+
+        // Check for fformat chunk (fmt)
+        if (strncmp((char*)chunk.chunkid, "fmt ", 4) == 0) {
+            uint32_t size_to_read = (chunk.chunk_size < sizeof(fmt_chunk_t)) ? chunk.chunk_size : sizeof(fmt_chunk_t);
+            if (fread(&(*header)->fmt, 1, size_to_read, file) < size_to_read) {
+                puts("[Error] : Failed to read fmt chunk\n");
+                break;
+                }
+
+            // skip any extra bytes in fmt chunk 
+            if (chunk.chunk_size > sizeof(fmt_chunk_t)) {
+                fseek(file, chunk.chunk_size - sizeof(fmt_chunk_t), SEEK_CUR);
+                }
+            fmt_found = 1;
+            memcpy(essential_chunks.fmt_chunk_id, "fmt ",4);
+            essential_chunks.fmt_chunk_size = size_to_read;
+
+            }
+
+        else if (strncmp((char*)chunk.chunkid, "data", 4) == 0) {
+            (*header)->data_size = chunk.chunk_size;
+            (*header)->data_offset = ftell(file);
+            data_found = 1;
+            memcpy(essential_chunks.data_chunk_id, "data",4);
+            break;
+            }
+
+        else {
+            fseek(file, chunk.chunk_size, SEEK_CUR);
+            // means skip N bytes (chunk.chunk_size) from current courser pos
+            }
+
+        }
+    if (!fmt_found || !data_found) {
+        printf("[Error] : Missing critical chunks (fmt: %s, data: %s)\n", fmt_found ? "found" : "MISSING", data_found ? "found" : "MISSING");
+        free(*header);
+        return NULL;
+        }
+
     // Cal. number of samples
-    size_t num_sample = header->data_size / header->block_align;
+    size_t num_sample = (*header)->data_size / (*header)->fmt.block_align;
 
     // limit to MAX_SAMPLES
     if (num_sample > MAX_SAMPLES) {
@@ -76,12 +155,12 @@ int8_t* read_wav_data(const char* filename, wav_header_t* header, size_t* data_s
     /*  block algin will give the size of snapshort / size of the sample (including all channels)
         multiply total samples with block_align to get the no of bytes to read
         */
-    size_t bytes_to_read = num_sample * header->block_align;
+    (*header)->bytes_to_read = num_sample * (*header)->fmt.block_align;
     /*why used int8_t and why not caused errors?
         malloc(bytes_to_read) reserves a contiguous block of bytes.
         Casting it to int8_t* tells the compiler to treat this block as an array of individual 8-bit bytes,
         which is perfect for binary data or raw data manipulation. */
-    int8_t* data = (int8_t*)malloc(bytes_to_read);
+    int8_t* data = (int8_t*)malloc((*header)->bytes_to_read);
     if (!data) {
         printf("[%sError%s] : Cannot allocate the memory to audio data \n", FG_RED, RESET);
         fclose(file);
@@ -89,16 +168,24 @@ int8_t* read_wav_data(const char* filename, wav_header_t* header, size_t* data_s
         }
 
     // Read audio data
-    size_t bytes_read = fread(data, 1, bytes_to_read, file);
+    fseek(file, (*header)->data_offset, SEEK_SET);
+    size_t bytes_read = fread(data, 1, (*header)->bytes_to_read, file);
+    if (bytes_read < (*header)->bytes_to_read) {
+        puts("[Error] | Data Reading | Failed to Read Payload\n");
+        return NULL;
+        }
+
     fclose(file);
 
-    *data_size = bytes_read;
     return data;
     }
 
+
+
+
 // Write WAV file with modification data
 
-int write_wav_file(const char* filename, wav_header_t* header, int8_t* data, size_t data_size) {
+int write_wav_file(const char* filename, wav_header_t** header, int8_t* data, uint32_t data_size) {
     FILE* file = fopen(filename, "wb");
     if (!file) {
         printf("[%sError%s] ; cannot able to open the file '%s'\n", FG_RED, RESET, filename);
@@ -106,11 +193,22 @@ int write_wav_file(const char* filename, wav_header_t* header, int8_t* data, siz
         }
 
     // Update the headers
-    header->file_size = 36 + data_size;
-    header->data_size = data_size;
+    (*header)->riff.file_size = 36 + (*header)->bytes_to_read;
+    (*header)->data_size = data_size;
 
-    fwrite(header, 1, sizeof(wav_header_t), file); //write header
-    fwrite(data, 1, data_size, file); //writing audio data
+    // writing RIFF HEADER 
+    fwrite(&(*header)->riff, 1, sizeof(riff_header_t), file);
+
+    // write fmt chunk 
+    fwrite(essential_chunks.fmt_chunk_id, 1, 4, file);
+    fwrite(&essential_chunks.fmt_chunk_size, 1, 4, file);
+    fwrite(&(*header)->fmt, 1, sizeof(fmt_chunk_t), file);
+
+    // write data chunk 
+    fwrite(essential_chunks.data_chunk_id, 1, 4, file);
+    fwrite(&data_size, 1, 4, file);
+    fwrite(data, 1, data_size, file);
+
     fclose(file);
     return 0;
     }
@@ -171,10 +269,10 @@ void print_usage() {
 
 void print_header_info(wav_header_t* header, bool input_file) {
     printf("%s %s File : %s\n", FG_BCYAN, (input_file ? "Input" : "Output"), RESET);
-    printf("Audio format : %u\n", header->audio_format);
-    printf("Audio Channel : %u\n", header->audio_channels);
-    printf("bits per sample : %u\n", header->bits_per_sample);
-    printf("Sample rate : %u\n", header->sample_rate);
+    printf("Audio format : %u\n", header->fmt.audio_format);
+    printf("Audio Channel : %u\n", header->fmt.audio_channels);
+    printf("bits per sample : %u\n", header->fmt.bits_per_sample);
+    printf("Sample rate : %u\n", header->fmt.sample_rate);
 
     }
 
@@ -193,38 +291,38 @@ int main(int argc, char* argv[]) {
         }
 
     print_progress(input_file, output_file, gain);
-    
+
     printf("%sProcessing...%s\n", FG_GREEN, RESET);
 
     // Read headers
 
-    wav_header_t header;
-    size_t data_size;
-    int8_t* data = read_wav_data(input_file, &header, &data_size);
-
+    wav_header_t* header = NULL;
+    int8_t* data = read_wav_data(input_file, &header);
+    
     if (!data) { return 1; }
+    size_t data_size = header->bytes_to_read;
 
-    print_header_info(&header, true);
+    print_header_info(header, true);
 
     // Applying gain in 16 bit stereo 
-    if (header.bits_per_sample == 16 && header.audio_channels == 2) {
+    if (header->fmt.bits_per_sample == 16 && header->fmt.audio_channels == 2) {
         int16_t* samples = (int16_t*)data;
         size_t num_frames = data_size / 4;
         apply_gain_stereo(samples, num_frames, gain);
         }
-    else if (header.bits_per_sample == 16 && header.audio_channels == 1) {
+    else if (header->fmt.bits_per_sample == 16 && header->fmt.audio_channels == 1) {
         // 16-bit mono
         int16_t* samples = (int16_t*)data;
         size_t num_samples = data_size / 2;
         apply_gain_mono(samples, num_samples, gain);
         }
-    else if (header.bits_per_sample == 8) {
+    else if (header->fmt.bits_per_sample == 8) {
         // 8-bit audio
         apply_gain_8bit((int8_t*)data, data_size, gain);
         }
     else {
         printf("Error: Unsupported format (%u bit, %u channels)\n",
-            header.bits_per_sample, header.audio_channels);
+            header->fmt.bits_per_sample, header->fmt.audio_channels);
         free(data);
         return 1;
         }
@@ -236,7 +334,7 @@ int main(int argc, char* argv[]) {
         }
 
     puts("Done !");
-    print_header_info(&header, false);
+    print_header_info(header, false);
 
     free(data);
     return 0;
