@@ -23,9 +23,10 @@ Programs dealing with parsing WAV headers and manipulating raw audio data on dis
 * **[wav_Reader.c](./basic/wav_Reader.c)**: 
   * Parses and validates WAV file headers. 
   * Reads the RIFF container, format chunks, and data chunks to extract metadata (channels, bit depth, sample rate).
+  * Safely handles unknown chunks by seeking past them, locating critical chunks independently of their order.
 * **[vol_control.c](./basic/vol_control.c)**: 
   * A utility that modifies the volume (gain) of a WAV file.
-  * Directly manipulates raw PCM sample values.
+  * Dynamically loads raw PCM data into memory (with an upper safety limit to avoid memory exhaustion) for byte-by-byte manipulation.
   * Handles 8-bit, 16-bit mono, and 16-bit stereo formats using precise bitwise clamping to prevent clipping.
 * **[decor.h](./decor.h)**: 
   * A utility header providing ANSI escape codes for rich, colored terminal output styling.
@@ -41,6 +42,10 @@ Programs dealing with real-time audio playback and hardware communication using 
 * **[silence.c](./port_audio/silence.c)**: 
   * Implements a real-time PortAudio playback stream.
   * Uses an audio callback function to push raw PCM data (in this case, zeros for absolute silence) directly to the sound card's hardware buffer.
+* **[silence_v2.c](./port_audio/silence_v2.c)**: 
+  * An advanced implementation of the real-time playback stream.
+  * Takes a custom duration via CLI arguments and utilizes an audio callback to push randomly generated float values (white noise) to the audio buffer.
+  * Features a styled terminal interface showing device info and real-time elapsed duration tracking.
 
 ---
 
