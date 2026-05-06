@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFF Container Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @keyframes pulse-wave {
+            0%, 100% { height: 20%; opacity: 0.3; }
+            50% { height: 80%; opacity: 1; }
+        }
+        .wave-bar {
+            width: 4px;
+            background-color: #a855f7; /* purple-500 */
+            border-radius: 9999px;
+            animation: pulse-wave infinite ease-in-out;
+        }
+        select, input[type="text"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans antialiased">
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold flex items-center gap-3 text-white">
+                <i class="ph ph-cube text-blue-400 text-4xl"></i>
+                RIFF/WAVE Containerization Visualizer
+            </h1>
+            <p class="text-slate-400 mt-2 max-w-3xl leading-relaxed">
+                A <strong>RIFF (Resource Interchange File Format)</strong> file acts like a set of nested shipping boxes. 
+                Every box (called a "chunk") starts with a 4-letter ID and its exact size. This expanded visualization includes the optional <strong>LIST</strong> container, which is used to store metadata (like Artist and Title) right alongside the audio payload.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: Controls -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Audio Parameters -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-2 text-blue-400">
+                        <i class="ph ph-sliders"></i>
+                        Audio Parameters
+                    </h2>
+                    
+                    <div class="space-y-5">
+                        <!-- Duration Slider -->
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-slate-300 mb-2">
+                                <span>Duration (Seconds)</span>
+                                <span class="text-blue-400 font-mono" id="lbl-duration">1s</span>
+                            </label>
+                            <input 
+                                type="range" id="input-duration" min="1" max="60" value="1" 
+                                class="w-full accent-blue-500"
+                            />
+                        </div>
+
+                        <!-- Sample Rate -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Sample Rate (Hz)</label>
+                            <select id="input-sampleRate" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="8000">8,000 (Phone quality)</option>
+                                <option value="22050">22,050 (Radio quality)</option>
+                                <option value="44100" selected>44,100 (CD quality)</option>
+                                <option value="48000">48,000 (DVD quality)</option>
+                                <option value="96000">96,000 (Studio quality)</option>
+                            </select>
+                        </div>
+
+                        <!-- Channels -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Channels</label>
+                            <select id="input-channels" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="1">1 (Mono)</option>
+                                <option value="2" selected>2 (Stereo)</option>
+                            </select>
+                        </div>
+
+                        <!-- Bit Depth -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Bit Depth (Bits per sample)</label>
+                            <select id="input-bitDepth" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="8">8-bit</option>
+                                <option value="16" selected>16-bit (CD standard)</option>
+                                <option value="24">24-bit (High-Res)</option>
+                                <option value="32">32-bit (Float)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metadata (LIST) Controls -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold flex items-center gap-2 text-amber-400">
+                            <i class="ph ph-tag"></i>
+                            Metadata (LIST Chunk)
+                        </h2>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="input-includeMeta" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    <div id="meta-inputs-container" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Artist (IART)</label>
+                            <input type="text" id="input-artist" value="Daft Punk" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-2 focus:ring-2 focus:ring-amber-500 outline-none font-mono text-sm" placeholder="Artist name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Title (INAM)</label>
+                            <input type="text" id="input-title" value="Giorgio by Moroder" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-2 focus:ring-2 focus:ring-amber-500 outline-none font-mono text-sm" placeholder="Track title">
+                        </div>
+                        <p class="text-[10px] text-slate-500 italic mt-2">
+                            * Note: RIFF strings are null-terminated (+1 byte) and padded to an even number of bytes to maintain alignment.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- File Size Summary -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-400">Total File Size:</span>
+                        <span class="font-mono text-green-400 font-bold" id="val-totalFileSizeHuman">0 MB</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-slate-400">Total Bytes:</span>
+                        <span class="font-mono text-slate-300" id="val-totalFileSizeBytes">0 bytes</span>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-blue-950/30 border border-blue-900/50 rounded-xl p-5 shadow-lg">
+                    <h3 class="text-blue-400 font-semibold mb-2 flex items-center gap-2">
+                        <i class="ph ph-info"></i>
+                        Container Logic
+                    </h3>
+                    <p class="text-sm text-blue-200/80 leading-relaxed">
+                        The Master <span class="font-mono text-xs bg-blue-900/40 px-1 rounded">RIFF</span> Chunk Size is calculated as: <br>
+                        <code>4 (WAVE) + 24 (fmt) + 8 (data header) + Data Payload + LIST Chunk Size (if enabled)</code>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Column: Visualization -->
+            <div class="lg:col-span-8 flex flex-col justify-start">
+                
+                <!-- Legend -->
+                <div class="flex flex-wrap gap-4 mb-4 text-xs font-mono">
+                    <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-blue-500/20 border-2 border-blue-500 rounded-sm"></div> RIFF Header</div>
+                    <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-emerald-500/20 border-2 border-emerald-500 rounded-sm"></div> fmt Subchunk</div>
+                    <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-amber-500/20 border-2 border-amber-500 rounded-sm"></div> LIST Subchunk</div>
+                    <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-purple-500/20 border-2 border-purple-500 rounded-sm"></div> data Subchunk</div>
+                </div>
+
+                <!-- Master RIFF Container -->
+                <div class="bg-slate-900/50 border-2 border-slate-700 rounded-xl p-1 overflow-hidden shadow-2xl transition-all duration-300">
+                    <div class="bg-blue-950/20 border-2 border-blue-500 rounded-lg p-4 sm:p-6 transition-all duration-300 shadow-[0_0_30px_rgba(59,130,246,0.15)]">
+                        
+                        <!-- RIFF Header Row -->
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <div class="bg-slate-800 text-blue-300 text-xs font-mono px-3 py-1.5 rounded flex items-center gap-2 border border-slate-700">
+                                <span class="text-slate-400">Chunk ID:</span>
+                                <span class="font-bold text-white tracking-widest">'RIFF'</span>
+                                <span class="text-[10px] text-slate-500 ml-2">(4 bytes)</span>
+                            </div>
+                            <div class="bg-slate-800 text-blue-300 text-xs font-mono px-3 py-1.5 rounded flex items-center gap-2 border border-slate-700 transition-colors duration-200 hover:bg-slate-700">
+                                <span class="text-slate-400">Chunk Size:</span>
+                                <span class="font-bold text-white" id="val-riffChunkSize">0</span>
+                                <span class="text-[10px] text-slate-500 ml-2">(4 bytes)</span>
+                            </div>
+                            <div class="bg-slate-800 text-blue-300 text-xs font-mono px-3 py-1.5 rounded flex items-center gap-2 border border-slate-700">
+                                <span class="text-slate-400">Format:</span>
+                                <span class="font-bold text-white tracking-widest">'WAVE'</span>
+                                <span class="text-[10px] text-slate-500 ml-2">(4 bytes)</span>
+                            </div>
+                        </div>
+
+                        <!-- Subchunks Wrapper -->
+                        <div class="pl-4 sm:pl-8 border-l-2 border-blue-500 space-y-6">
+                            
+                            <!-- fmt Subchunk -->
+                            <div class="bg-emerald-950/10 border-2 border-emerald-500 rounded-lg p-4 transition-all duration-300 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <div class="bg-slate-800 text-emerald-300 text-xs font-mono px-2 py-1 rounded flex items-center gap-2 border border-slate-700">
+                                        <span class="text-slate-400">Subchunk ID:</span>
+                                        <span class="font-bold text-white tracking-widest">'fmt '</span>
+                                    </div>
+                                    <div class="bg-slate-800 text-emerald-300 text-xs font-mono px-2 py-1 rounded flex items-center gap-2 border border-slate-700">
+                                        <span class="text-slate-400">Subchunk Size:</span>
+                                        <span class="font-bold text-white">16</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Format Data Grid -->
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-900/80 rounded-md p-3 border border-slate-800">
+                                    <div class="p-2 rounded border bg-slate-800/50 border-slate-700/50">
+                                        <div class="text-[10px] text-slate-500 mb-1 flex justify-between"><span>AudioFormat</span><span>2b</span></div>
+                                        <div class="font-mono text-sm text-slate-300">1 (PCM)</div>
+                                    </div>
+                                    <div class="p-2 rounded border bg-slate-800/50 border-slate-700/50">
+                                        <div class="text-[10px] text-slate-500 mb-1 flex justify-between"><span>NumChannels</span><span>2b</span></div>
+                                        <div class="font-mono text-sm text-slate-300" id="val-channels">2</div>
+                                    </div>
+                                    <div class="p-2 rounded border bg-blue-900/20 border-blue-800/50">
+                                        <div class="text-[10px] text-slate-500 mb-1 flex justify-between"><span>SampleRate</span><span>4b</span></div>
+                                        <div class="font-mono text-sm text-blue-300 font-bold" id="val-sampleRate">44100</div>
+                                    </div>
+                                    <div class="p-2 rounded border bg-slate-800/50 border-slate-700/50">
+                                        <div class="text-[10px] text-slate-500 mb-1 flex justify-between"><span>ByteRate</span><span>4b</span></div>
+                                        <div class="font-mono text-sm text-slate-300" id="val-byteRate">176400</div>
+                                    </div>
+                                    <div class="p-2 rounded border bg-slate-800/50 border-slate-700/50">
+                                        <div class="text-[10px] text-slate-500 mb-1 flex justify-between"><span>BlockAlign</span><span>2b</span></div>
+                                        <div class="font-mono text-sm text-slate-300" id="val-blockAlign">4</div>
+                                    </div>
+                                    <div class="p-2 rounded border bg-blue-900/20 border-blue-800/50">
+                                        <div class="text-[10px] text-slate-500 mb-1 flex justify-between"><span>BitsPerSample</span><span>2b</span></div>
+                                        <div class="font-mono text-sm text-blue-300 font-bold" id="val-bitDepth">16</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- LIST Subchunk (Dynamically Toggled) -->
+                            <div id="chunk-list" class="bg-amber-950/10 border-2 border-amber-500 rounded-lg p-4 transition-all duration-300 hover:border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <div class="bg-slate-800 text-amber-300 text-xs font-mono px-2 py-1 rounded flex items-center gap-2 border border-slate-700">
+                                        <span class="text-slate-400">Subchunk ID:</span>
+                                        <span class="font-bold text-white tracking-widest">'LIST'</span>
+                                    </div>
+                                    <div class="bg-slate-800 text-amber-300 text-xs font-mono px-2 py-1 rounded flex items-center gap-2 border border-slate-700 transition-colors duration-200 hover:bg-slate-700">
+                                        <span class="text-slate-400">Subchunk Size:</span>
+                                        <span class="font-bold text-white" id="val-listChunkSize">0</span>
+                                    </div>
+                                    <div class="bg-slate-800 text-amber-300 text-xs font-mono px-2 py-1 rounded flex items-center gap-2 border border-slate-700">
+                                        <span class="text-slate-400">List Type:</span>
+                                        <span class="font-bold text-white tracking-widest">'INFO'</span>
+                                    </div>
+                                </div>
+
+                                <!-- INFO Sub-chunks (IART & INAM) -->
+                                <div class="space-y-2 border-l-2 border-slate-700 pl-4 ml-2">
+                                    
+                                    <!-- IART (Artist) Container -->
+                                    <div class="flex flex-col sm:flex-row gap-2 bg-slate-900/80 rounded-md p-2 border border-slate-800 items-start sm:items-center">
+                                        <div class="flex gap-2 shrink-0">
+                                            <span class="bg-slate-800 text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-700">'IART'</span>
+                                            <span class="bg-slate-800 text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-700" id="val-iartSize">0 bytes</span>
+                                        </div>
+                                        <div class="font-mono text-xs text-amber-200 truncate w-full" id="val-iartData">"Artist\0"</div>
+                                    </div>
+
+                                    <!-- INAM (Title) Container -->
+                                    <div class="flex flex-col sm:flex-row gap-2 bg-slate-900/80 rounded-md p-2 border border-slate-800 items-start sm:items-center">
+                                        <div class="flex gap-2 shrink-0">
+                                            <span class="bg-slate-800 text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-700">'INAM'</span>
+                                            <span class="bg-slate-800 text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-700" id="val-inamSize">0 bytes</span>
+                                        </div>
+                                        <div class="font-mono text-xs text-amber-200 truncate w-full" id="val-inamData">"Title\0"</div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- data Subchunk -->
+                            <div class="bg-purple-950/10 border-2 border-purple-500 rounded-lg p-4 transition-all duration-300 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <div class="bg-slate-800 text-purple-300 text-xs font-mono px-2 py-1 rounded flex items-center gap-2 border border-slate-700">
+                                        <span class="text-slate-400">Subchunk ID:</span>
+                                        <span class="font-bold text-white tracking-widest">'data'</span>
+                                    </div>
+                                    <div class="bg-slate-800 text-purple-300 text-xs font-mono px-2 py-1 rounded flex items-center gap-2 border border-slate-700 transition-colors duration-200 hover:bg-slate-700">
+                                        <span class="text-slate-400">Subchunk Size:</span>
+                                        <span class="font-bold text-white" id="val-dataSize">0</span>
+                                    </div>
+                                </div>
+
+                                <!-- Raw Audio Data Representation -->
+                                <div class="relative w-full h-32 bg-slate-900 rounded-md border border-slate-800 overflow-hidden group flex items-center justify-center">
+                                    <!-- Animated wave pattern simulation (Generated by JS) -->
+                                    <div id="wave-container" class="absolute inset-0 flex items-center justify-around px-2">
+                                        <!-- Wave bars inserted here -->
+                                    </div>
+                                    
+                                    <div class="relative z-10 flex flex-col items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-lg backdrop-blur-sm border border-slate-700">
+                                        <i class="ph ph-music-notes text-purple-400 text-2xl"></i>
+                                        <span class="font-mono text-sm text-purple-200" id="val-dataSizeHuman">
+                                            0 Bytes of Raw Audio
+                                        </span>
+                                        <span class="text-[10px] text-slate-400 uppercase tracking-wider">
+                                            Interleaved sample bytes
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // DOM Elements
+        const inputs = {
+            duration: document.getElementById('input-duration'),
+            sampleRate: document.getElementById('input-sampleRate'),
+            channels: document.getElementById('input-channels'),
+            bitDepth: document.getElementById('input-bitDepth'),
+            includeMeta: document.getElementById('input-includeMeta'),
+            artist: document.getElementById('input-artist'),
+            title: document.getElementById('input-title')
+        };
+
+        const outputs = {
+            lblDuration: document.getElementById('lbl-duration'),
+            totalFileSizeHuman: document.getElementById('val-totalFileSizeHuman'),
+            totalFileSizeBytes: document.getElementById('val-totalFileSizeBytes'),
+            
+            channels: document.getElementById('val-channels'),
+            sampleRate: document.getElementById('val-sampleRate'),
+            byteRate: document.getElementById('val-byteRate'),
+            blockAlign: document.getElementById('val-blockAlign'),
+            bitDepth: document.getElementById('val-bitDepth'),
+            
+            riffChunkSize: document.getElementById('val-riffChunkSize'),
+            dataSize: document.getElementById('val-dataSize'),
+            dataSizeHuman: document.getElementById('val-dataSizeHuman'),
+            
+            listChunk: document.getElementById('chunk-list'),
+            listChunkSize: document.getElementById('val-listChunkSize'),
+            metaInputsContainer: document.getElementById('meta-inputs-container'),
+            
+            iartSize: document.getElementById('val-iartSize'),
+            iartData: document.getElementById('val-iartData'),
+            inamSize: document.getElementById('val-inamSize'),
+            inamData: document.getElementById('val-inamData')
+        };
+
+        // Utility: Format Bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Initialize wave animation
+        function setupWaves() {
+            const container = document.getElementById('wave-container');
+            let html = '';
+            for (let i = 0; i < 40; i++) {
+                const height = Math.random() * 80 + 20;
+                const delay = Math.random() * 1;
+                const duration = Math.random() * 0.5 + 0.5;
+                html += `<div class="wave-bar" style="height: ${height}%; animation-delay: ${delay}s; animation-duration: ${duration}s"></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // Main Calculation and Render Function
+        function calculateAndRender() {
+            // Read state
+            const duration = parseFloat(inputs.duration.value);
+            const sampleRate = parseInt(inputs.sampleRate.value);
+            const channels = parseInt(inputs.channels.value);
+            const bitDepth = parseInt(inputs.bitDepth.value);
+            const includeMeta = inputs.includeMeta.checked;
+            const artistText = inputs.artist.value;
+            const titleText = inputs.title.value;
+
+            // Update simple labels
+            outputs.lblDuration.innerText = duration + 's';
+            outputs.channels.innerText = channels;
+            outputs.sampleRate.innerText = sampleRate;
+            outputs.bitDepth.innerText = bitDepth;
+
+            // Core audio calculations
+            const byteRate = sampleRate * channels * (bitDepth / 8);
+            const blockAlign = channels * (bitDepth / 8);
+            const dataSize = duration * byteRate; // Subchunk2Size
+
+            outputs.byteRate.innerText = byteRate.toLocaleString();
+            outputs.blockAlign.innerText = blockAlign;
+            outputs.dataSize.innerText = dataSize.toLocaleString();
+            outputs.dataSizeHuman.innerText = formatBytes(dataSize) + ' of Raw Audio';
+
+            // LIST Container Logic
+            let listChunkSizeTotal = 0;
+            
+            if (includeMeta) {
+                outputs.listChunk.style.display = 'block';
+                outputs.metaInputsContainer.style.opacity = '1';
+                outputs.metaInputsContainer.style.pointerEvents = 'auto';
+
+                // Artist (IART) logic
+                // Size = string length + 1 (null byte)
+                const artSize = artistText.length + 1; 
+                // Padding to ensure even boundary
+                const artPad = artSize % 2 !== 0 ? 1 : 0; 
+                // String visualizer with explicit null terminator \0
+                let formattedArtist = `"${artistText}\\0"`;
+                if (artPad) formattedArtist += ' + pad';
+                
+                outputs.iartSize.innerText = `${artSize + artPad} bytes`;
+                outputs.iartData.innerText = formattedArtist;
+
+                // Title (INAM) logic
+                const namSize = titleText.length + 1;
+                const namPad = namSize % 2 !== 0 ? 1 : 0;
+                let formattedTitle = `"${titleText}\\0"`;
+                if (namPad) formattedTitle += ' + pad';
+                
+                outputs.inamSize.innerText = `${namSize + namPad} bytes`;
+                outputs.inamData.innerText = formattedTitle;
+
+                // 4 ('INFO') + 8 (IART Header) + IART Data + 8 (INAM Header) + INAM Data
+                listChunkSizeTotal = 4 + (8 + artSize + artPad) + (8 + namSize + namPad);
+                outputs.listChunkSize.innerText = listChunkSizeTotal.toLocaleString();
+            } else {
+                outputs.listChunk.style.display = 'none';
+                outputs.metaInputsContainer.style.opacity = '0.5';
+                outputs.metaInputsContainer.style.pointerEvents = 'none';
+            }
+
+            // The main dynamic calculation 
+            // 36 bytes = 4(WAVE) + 8(fmt header) + 16(fmt payload) + 8(data header)
+            let riffChunkSize = 36 + dataSize; 
+            
+            // If the user enabled metadata, we add the 8 bytes of LIST header + the list payload
+            if (includeMeta) {
+                riffChunkSize += 8 + listChunkSizeTotal;
+            }
+
+            outputs.riffChunkSize.innerText = riffChunkSize.toLocaleString();
+
+            const totalFileSize = riffChunkSize + 8; // 8 bytes for 'RIFF' + ChunkSize
+            
+            outputs.totalFileSizeHuman.innerText = formatBytes(totalFileSize);
+            outputs.totalFileSizeBytes.innerText = totalFileSize.toLocaleString() + ' bytes';
+        }
+
+        // Attach Event Listeners
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', calculateAndRender);
+            // Handle checkbox explicitly just in case 'change' is preferred over 'input'
+            if(input.type === 'checkbox') {
+                input.addEventListener('change', calculateAndRender);
+            }
+        });
+
+        // Initial setup
+        setupWaves();
+        calculateAndRender();
+    </script>
+</body>
+</html>
+

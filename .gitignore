@@ -31,5 +31,6 @@
 *
 !*.*
 !*/
+.obsidian
 !.gitignore
 dbms_in_c++/basics/info.h
