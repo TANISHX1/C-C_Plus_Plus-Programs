@@ -94,7 +94,7 @@ All multi-byte values are **little-endian**. Each chunk consists of a 4-byte ID,
 
 
 > [!NOTE] Title
->see the Visualisation of [WAVE FORMAT VISUALIZATION.html](../../docs/WAVE%20FORMAT%20VISUALIZATION.html) file (how containerisation works )
+>see the Visualisation of [WAVE FORMAT VISUALIZATION.html](../../docs/wave-format-visualization.html) file (how containerisation works )
 
 
 | Chunk ID   | Size (Bytes)    | Data Section Structure                                                                                                                                                                                                                                                                                                                                                 |

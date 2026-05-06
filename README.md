@@ -25,11 +25,6 @@ An improved implementation of the classic Hangman game featuring:
 - Word list management
 - Debug utilities
 
-## Simulations
-
-Explore the interactive visualizations hosted on GitHub Pages:
-[Click here to view the WAVE Format Visualization](https://TANISHX1.github.io/C-C_Plus_Plus-Programs/WAVE%20FORMAT%20VISUALIZATION.html)
-
 ## Getting Started
 
 Each subfolder contains its own programs that can be compiled and executed independently. Refer to individual README.md files in each folder for detailed information about specific programs.

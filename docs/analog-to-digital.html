@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analog to Digital: Pro Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Color Palette Variables */
+        :root {
+            --col-dark: #2b1d1c;
+            --col-red: #861c1c;
+            --col-orange: #c06f30;
+            --col-yellow: #f4b34f;
+            --col-peach: #ecceb6;
+            --col-cream: #e8e3cf;
+            --col-bg: #1a100f; 
+        }
+
+        body { 
+            background-color: var(--col-bg); 
+            color: var(--col-cream); 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+        }
+        
+        /* Pro Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--col-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--col-red); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--col-orange); }
+
+        /* App Slider Styling */
+        input[type=range] { 
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--col-yellow);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(244, 179, 79, 0.4);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--col-dark);
+            border: 1px solid var(--col-red);
+            border-radius: 2px;
+        }
+
+        /* --- Custom Step Animations --- */
+        @keyframes flowWave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .anim-wave { animation: flowWave 3s linear infinite; }
+
+        @keyframes pulseTick {
+            0%, 100% { height: 20%; opacity: 0.4; }
+            50% { height: 100%; opacity: 1; }
+        }
+        .anim-tick { animation: pulseTick 1.5s infinite ease-in-out; transform-origin: bottom; }
+        
+        @keyframes snapDot {
+            0%, 15% { bottom: 4px; }
+            20%, 45% { bottom: 14px; }
+            50%, 75% { bottom: 24px; }
+            80%, 100% { bottom: 14px; }
+        }
+        .anim-snap {
+            animation: snapDot 2.5s infinite steps(1, end);
+            transition: bottom 0.1s; 
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col selection:bg-[#c06f30] selection:text-white">
+
+    <!-- Top Application Bar -->
+    <header class="h-14 shrink-0 bg-[#2b1d1c] border-b border-[#861c1c]/50 flex items-center justify-between px-6 shadow-md z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-[#861c1c]/20 flex items-center justify-center border border-[#861c1c]/50">
+                <i class="ph ph-wave-sine text-[#f4b34f] text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-[#f4b34f] font-bold tracking-wide text-sm">ADC Visualizer Pro</h1>
+                <p class="text-[#ecceb6]/60 text-[10px] uppercase tracking-widest leading-none">Analog to Digital Converter</p>
+            </div>
+        </div>
+
+        <!-- Global Transport Controls -->
+        <div class="flex items-center gap-4 bg-[#1a100f] px-4 py-1.5 rounded-lg border border-[#861c1c]/30">
+            <span class="text-[10px] text-[#ecceb6]/50 font-mono uppercase tracking-widest">Transport</span>
+            <div class="h-4 w-px bg-[#861c1c]/30"></div>
+            <button id="btnPlay" class="flex items-center gap-2 text-sm font-semibold transition-all hover:scale-105 active:scale-95 text-[#f4b34f]">
+                <i class="ph ph-pause-circle text-2xl" id="playIcon"></i>
+                <span id="playText" class="w-20 text-left">Pause</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Left Sidebar: Parameters Engine -->
+        <aside class="w-72 md:w-80 shrink-0 bg-[#1a100f] border-r border-[#861c1c]/40 flex flex-col z-10 shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
+            <div class="p-4 border-b border-[#861c1c]/20 bg-[#2b1d1c]/50">
+                <h2 class="text-[10px] text-[#c06f30] font-mono tracking-[0.2em] uppercase font-bold flex items-center gap-2">
+                    <i class="ph ph-faders"></i> Parameters Engine
+                </h2>
+            </div>
+            
+            <div class="p-6 space-y-8 overflow-y-auto">
+                <!-- Sample Rate Control -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-end">
+                        <label class="text-sm font-medium text-[#ecceb6] flex items-center gap-2">
+                            <i class="ph ph-clock text-[#c06f30]"></i> Sample Rate
+                        </label>
+                        <div class="bg-[#2b1d1c] border border-[#861c1c]/50 px-2 py-1 rounded shadow-inner text-right min-w-[70px]">
+                            <span id="rateLabel" class="text-[#f4b34f] font-mono text-xs font-bold">20</span>
+                        </div>
+                    </div>
+                    <input type="range" id="sampleRate" min="5" max="100" value="20" class="w-full">
+                    <p class="text-[11px] text-[#ecceb6]/60 leading-snug">
+                        Frequency of snapshots (X-Axis). Increases horizontal sampling resolution over time.
+                    </p>
+                </div>
+
+                <!-- Bit Depth Control -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-end">
+                        <label class="text-sm font-medium text-[#ecceb6] flex items-center gap-2">
+                            <i class="ph ph-ruler text-[#861c1c]"></i> Bit Depth
+                        </label>
+                        <div class="bg-[#2b1d1c] border border-[#861c1c]/50 px-2 py-1 rounded shadow-inner text-right min-w-[70px]">
+                            <span id="depthLabel" class="text-[#e8e3cf] font-mono text-xs font-bold">3-Bit</span>
+                        </div>
+                    </div>
+                    <input type="range" id="bitDepth" min="2" max="6" value="3" class="w-full">
+                    <p class="text-[11px] text-[#ecceb6]/60 leading-snug">
+                        Amplitude quantization (Y-Axis). Increases vertical measurement accuracy, reducing rounding noise.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Intersect Output Module -->
+            <div class="mt-auto p-4 border-t border-[#861c1c]/20 bg-[#2b1d1c]/30">
+                <div class="bg-[#1a100f] border border-[#c06f30]/40 rounded p-4 text-center">
+                    <i class="ph ph-hard-drives text-[#f4b34f] text-2xl mb-2"></i>
+                    <h4 class="text-xs font-bold text-[#f4b34f] mb-1">Digital Output</h4>
+                    <p class="text-[10px] text-[#ecceb6]/80">
+                        The reconstructed wave (yellow) is plotted exactly at the intersection of Sample Rate and Bit Depth grids.
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Side: Visualizer & Docs -->
+        <main class="flex-1 flex flex-col min-w-0 bg-[#1a100f] relative">
+            
+            <!-- Visualization Canvas Area (Top) -->
+            <section class="flex-[3] flex flex-col relative p-4 lg:p-6 min-h-[300px]">
+                <div class="absolute top-6 left-6 text-[10px] text-[#861c1c] font-mono tracking-[0.2em] uppercase font-bold z-10 flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-[#861c1c] animate-pulse"></div>
+                    Live Capture View
+                </div>
+                
+                <div class="flex-1 relative w-full h-full bg-[#2b1d1c] border border-[#861c1c]/40 rounded-lg shadow-inner overflow-hidden">
+                    <canvas id="adcCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                    
+                    <!-- Axis Labels -->
+                    <div class="absolute bottom-2 right-4 text-[#c06f30] font-mono text-[10px] font-bold tracking-widest uppercase bg-[#1a100f]/80 px-2 py-1 rounded border border-[#861c1c]/30">Time (Sample Rate) &rarr;</div>
+                    <div class="absolute top-4 left-2 text-[#861c1c] font-mono text-[10px] font-bold tracking-widest uppercase origin-top-left -rotate-90 bg-[#1a100f]/80 px-2 py-1 rounded border border-[#861c1c]/30">&larr; Amplitude (Bit Depth)</div>
+                </div>
+            </section>
+
+            <!-- Divider -->
+            <div class="h-1 bg-gradient-to-r from-[#2b1d1c] via-[#861c1c]/30 to-[#2b1d1c]"></div>
+
+            <!-- Workflow / Documentation Area (Bottom) -->
+            <section class="flex-[2] bg-[#1a100f] border-t border-[#861c1c]/30 overflow-y-auto min-h-[250px]">
+                <div class="sticky top-0 bg-[#2b1d1c]/95 backdrop-blur-sm border-b border-[#861c1c]/20 p-2 px-6 z-10">
+                    <h2 class="text-[10px] text-[#ecceb6] font-mono tracking-[0.2em] uppercase font-bold flex items-center gap-2">
+                        <i class="ph ph-terminal-window"></i> Conversion Process Flow
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#861c1c]/20 h-full p-4">
+                    
+                    <!-- Step 1 -->
+                    <div class="p-4 flex flex-col group">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-8 flex items-center justify-center border border-[#861c1c] bg-[#2b1d1c] rounded overflow-hidden relative">
+                                <svg class="w-[200%] h-full shrink-0 anim-wave" viewBox="0 0 200 50">
+                                    <path d="M 0 25 Q 25 5 50 25 T 100 25 T 150 25 T 200 25" fill="none" stroke="#e8e3cf" stroke-width="4" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-[#e8e3cf]">1. Analog Source</h3>
+                        </div>
+                        <p class="text-xs text-[#ecceb6]/70 leading-relaxed">
+                            The continuous real-world wave (cream curve). Because computers have finite memory, this infinite line must be discretized into a finite array of numeric values.
+                        </p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="p-4 flex flex-col group">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-8 flex items-end justify-center gap-[2px] border border-[#c06f30] bg-[#2b1d1c] rounded p-1 pb-1.5">
+                                <div class="w-1 bg-[#c06f30] rounded-t anim-tick" style="animation-delay: 0.0s"></div>
+                                <div class="w-1 bg-[#c06f30] rounded-t anim-tick" style="animation-delay: 0.2s"></div>
+                                <div class="w-1 bg-[#c06f30] rounded-t anim-tick" style="animation-delay: 0.4s"></div>
+                                <div class="w-1 bg-[#c06f30] rounded-t anim-tick" style="animation-delay: 0.6s"></div>
+                            </div>
+                            <h3 class="text-sm font-bold text-[#c06f30]">2. Sample Rate</h3>
+                        </div>
+                        <p class="text-xs text-[#ecceb6]/70 leading-relaxed">
+                            Slicing time. The ADC takes vertical "snapshots" (orange stems) at set intervals. Higher frequencies (e.g., 44.1kHz) capture more horizontal detail per second.
+                        </p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="p-4 flex flex-col group">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-8 relative flex flex-col justify-between py-1.5 px-1.5 border border-[#861c1c] bg-[#2b1d1c] rounded">
+                                <div class="h-px w-full bg-[#861c1c]"></div>
+                                <div class="h-px w-full bg-[#861c1c]"></div>
+                                <div class="h-px w-full bg-[#861c1c]"></div>
+                                <div class="absolute left-1/2 -ml-1 w-2 h-2 bg-[#f4b34f] rounded-full anim-snap"></div>
+                            </div>
+                            <h3 class="text-sm font-bold text-[#861c1c]">3. Bit Depth</h3>
+                        </div>
+                        <p class="text-xs text-[#ecceb6]/70 leading-relaxed">
+                            Measuring amplitude. The dot must snap to the nearest fixed ruler mark (red grid). Higher bit depths create more marks, minimizing vertical rounding errors.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Application Engine Logic -->
+    <script>
+        const canvas = document.getElementById('adcCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // UI Elements
+        const rateSlider = document.getElementById('sampleRate');
+        const depthSlider = document.getElementById('bitDepth');
+        const rateLabel = document.getElementById('rateLabel');
+        const depthLabel = document.getElementById('depthLabel');
+        const btnPlay = document.getElementById('btnPlay');
+        const playIcon = document.getElementById('playIcon');
+        const playText = document.getElementById('playText');
+
+        // State Variables
+        let isAnimating = true;
+        let animationProgress = 0; 
+        let lastTime = 0;
+
+        // Resize handler targeting parent container
+        function resizeCanvas() {
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        // Initial resize needs slight delay to ensure flexbox computed
+        setTimeout(resizeCanvas, 0);
+
+        // Core DSP Functions
+        function getAnalogWave(xNormalized) {
+            return Math.sin(xNormalized * Math.PI * 4);
+        }
+
+        function quantize(value, bitDepth) {
+            const levels = Math.pow(2, bitDepth);
+            const normalized = (value + 1) / 2;
+            const quantizedInt = Math.round(normalized * (levels - 1));
+            return (quantizedInt / (levels - 1)) * 2 - 1;
+        }
+
+        // Render Loop
+        function draw(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if (isAnimating) {
+                animationProgress += deltaTime / 4000; 
+                if (animationProgress > 1.2) animationProgress = 0;
+            } else {
+                animationProgress = 1.0; 
+            }
+
+            const rate = parseInt(rateSlider.value);
+            const depth = parseInt(depthSlider.value);
+            const levels = Math.pow(2, depth);
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const padding = Math.min(40, canvas.width * 0.05); // Responsive padding
+            const graphWidth = canvas.width - padding * 2;
+            const graphHeight = canvas.height - padding * 2;
+            const midY = canvas.height / 2;
+
+            // 1. Bit Depth Grid (Red)
+            ctx.lineWidth = 1;
+            for (let i = 0; i < levels; i++) {
+                const yNorm = (i / (levels - 1)) * 2 - 1;
+                const yCanvas = midY - (yNorm * (graphHeight / 2));
+                
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(134, 28, 28, 0.4)'; // #861c1c
+                ctx.moveTo(padding, yCanvas);
+                ctx.lineTo(canvas.width - padding, yCanvas);
+                ctx.stroke();
+            }
+
+            // 2. Analog Wave (Cream)
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(232, 227, 207, 0.5)'; // #e8e3cf
+            ctx.lineWidth = 3;
+            for (let x = 0; x <= graphWidth; x++) {
+                const xNorm = x / graphWidth;
+                const yAnalog = getAnalogWave(xNorm);
+                const yCanvas = midY - (yAnalog * (graphHeight / 2));
+                
+                if (x === 0) ctx.moveTo(padding + x, yCanvas);
+                else ctx.lineTo(padding + x, yCanvas);
+            }
+            ctx.stroke();
+
+            // 3. Digital Snapshots
+            ctx.lineWidth = 2;
+            const scanX = padding + (animationProgress * graphWidth);
+            const digitalPoints = [];
+
+            for (let i = 0; i <= rate; i++) {
+                const xNorm = i / rate;
+                const xCanvas = padding + (xNorm * graphWidth);
+                
+                if (xCanvas > scanX && isAnimating) continue;
+
+                const yAnalog = getAnalogWave(xNorm);
+                const yDigital = quantize(yAnalog, depth);
+                const yCanvas = midY - (yDigital * (graphHeight / 2));
+
+                digitalPoints.push({x: xCanvas, y: yCanvas});
+
+                // Stems (Orange)
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(192, 111, 48, 0.7)'; // #c06f30
+                ctx.moveTo(xCanvas, midY);
+                ctx.lineTo(xCanvas, yCanvas);
+                ctx.stroke();
+
+                // Dots (Cream)
+                ctx.beginPath();
+                ctx.fillStyle = '#e8e3cf'; 
+                ctx.arc(xCanvas, yCanvas, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 4. Reconstructed Wave (Yellow)
+            if (digitalPoints.length > 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#f4b34f'; 
+                ctx.lineWidth = 2.5;
+                ctx.lineJoin = 'round';
+                ctx.moveTo(digitalPoints[0].x, digitalPoints[0].y);
+                for (let i = 1; i < digitalPoints.length; i++) {
+                    ctx.lineTo(digitalPoints[i].x, digitalPoints[i].y);
+                }
+                ctx.stroke();
+            }
+
+            // 5. Scanner Line (Peach)
+            if (isAnimating && animationProgress <= 1.0) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(236, 206, 182, 0.8)'; // #ecceb6
+                ctx.lineWidth = 2;
+                ctx.moveTo(scanX, padding / 2);
+                ctx.lineTo(scanX, canvas.height - (padding / 2));
+                ctx.stroke();
+                
+                // Scanner glow
+                ctx.beginPath();
+                ctx.fillStyle = 'rgba(236, 206, 182, 0.3)';
+                ctx.arc(scanX, midY - (getAnalogWave(animationProgress) * (graphHeight / 2)), 8, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // Listeners
+        rateSlider.addEventListener('input', (e) => {
+            rateLabel.innerText = e.target.value;
+        });
+
+        depthSlider.addEventListener('input', (e) => {
+            const bits = e.target.value;
+            depthLabel.innerText = `${bits}-Bit`;
+        });
+
+        btnPlay.addEventListener('click', () => {
+            if (!isAnimating) {
+                isAnimating = true;
+                animationProgress = 0; 
+                playText.innerText = "Pause";
+                playIcon.classList.replace('ph-play-circle', 'ph-pause-circle');
+                btnPlay.classList.replace('text-[#861c1c]', 'text-[#f4b34f]');
+            } else {
+                isAnimating = false;
+                playText.innerText = "Play";
+                playIcon.classList.replace('ph-pause-circle', 'ph-play-circle');
+                btnPlay.classList.replace('text-[#f4b34f]', 'text-[#861c1c]');
+            }
+        });
+
+        // Init
+        window.onload = function() {
+            requestAnimationFrame(draw);
+        };
+    </script>
+</body>
+</html>

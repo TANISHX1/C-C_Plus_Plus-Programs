@@ -54,4 +54,12 @@ If you ever encounter "static" or "white noise" while programming stereo audio, 
 
 ---
 
+## Interactive Simulations
+
+Explore the interactive visualizations hosted on GitHub Pages:
+- [Click here to view the WAVE Format Visualization](https://TANISHX1.github.io/C-C_Plus_Plus-Programs/docs/wave-format-visualization.html)
+- [Click here to view the Analog to Digital Output Visualizer](https://TANISHX1.github.io/C-C_Plus_Plus-Programs/docs/analog-to-digital.html)
+
+---
+
 > *Applications developed by Tanish Shivhare*
