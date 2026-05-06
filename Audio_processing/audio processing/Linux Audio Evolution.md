@@ -3,4 +3,4 @@ the evolution and technical architecture of **Linux audio systems**, focusing on
 
 
 > [!NOTE] Question 1
-> What are the essential real-time constraints for high-performance audio systems? [[Question 1]]
+> What are the essential real-time constraints for high-performance audio systems? [Question 1](Question%201.md)

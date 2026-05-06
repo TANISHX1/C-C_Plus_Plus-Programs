@@ -47,7 +47,7 @@
 |`LIST`|Metadata (artist, title)|Player **can** skip if it only wants to play sound|
 |`bext`|Broadcast extension (professional metadata)|Basic players **skip**; professional tools **use**|
  
-> **Question :** like in that example hexdump output (Read the[[How to Read the Hex Dump(Little-Endian)]] to learn about hex dump  )
+> **Question :** like in that example hexdump output (Read the[How to Read the Hex Dump(Little-Endian)](How%20to%20Read%20the%20Hex%20Dump(Little-Endian).md) to learn about hex dump  )
 
 | Offset   | Hex Values                                         | ASCII            |
 | :------- | :------------------------------------------------- | :--------------- |
@@ -88,13 +88,13 @@
 > │       └── ISFT (data chunk: "Lavf60.16.100")
 > └── data (data chunk: actual audio samples)
 
-## [[WAVE]] (RIFF) Chunk Specification Table
+## [WAVE](WAVE.md) (RIFF) Chunk Specification Table
 
 All multi-byte values are **little-endian**. Each chunk consists of a 4-byte ID, a 4-byte Size field, and the Data section.
 
 
 > [!NOTE] Title
->see the Visualisation of [[WAVE FORMAT VISUALIZATION.html]]file (how containerisation works )
+>see the Visualisation of [WAVE FORMAT VISUALIZATION.html](../../docs/WAVE%20FORMAT%20VISUALIZATION.html) file (how containerisation works )
 
 
 | Chunk ID   | Size (Bytes)    | Data Section Structure                                                                                                                                                                                                                                                                                                                                                 |

@@ -24,6 +24,6 @@ when we have to update a table (like rename a column , drop a column , add a col
 
 
 > [!Note] Need more Efforts to get Perfection
-> [[Things to learn ( additionally which is not deeply taught )]]
+> [Things to learn ( additionally which is not deeply taught )](Things%20to%20learn%20(%20additionally%20which%20is%20not%20deeply%20taught%20).md)
 
-### [[Triggers]]
+### [Triggers](Triggers.md)
