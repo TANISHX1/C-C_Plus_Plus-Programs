@@ -201,3 +201,6 @@ Expected Output:
 |`paClipOff`|Don't prevent clipping|Usually this value|
 |`audioCallback`|Which function to call|Your callback name|
 |`NULL`|Custom data for callback|We'll use this later|
+>In a callback-driven system like PortAudio, the audio thread fires asynchronously. Global variables are dangerous here.
+
+
