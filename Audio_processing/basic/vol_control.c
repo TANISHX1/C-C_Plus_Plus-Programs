@@ -104,7 +104,7 @@ int8_t* read_wav_data(const char* filename, wav_header_t** header) {
     // loop to skip unwanted subchunks
     while (fread(&chunk, 1, sizeof(chunk_header_t), file) == sizeof(chunk_header_t)) {
 
-        // Check for fformat chunk (fmt)
+        // Check for format chunk (fmt)
         if (strncmp((char*)chunk.chunkid, "fmt ", 4) == 0) {
             uint32_t size_to_read = (chunk.chunk_size < sizeof(fmt_chunk_t)) ? chunk.chunk_size : sizeof(fmt_chunk_t);
             if (fread(&(*header)->fmt, 1, size_to_read, file) < size_to_read) {
