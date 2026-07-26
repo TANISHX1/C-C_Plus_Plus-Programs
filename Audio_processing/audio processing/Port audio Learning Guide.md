@@ -204,3 +204,13 @@ Expected Output:
 >In a callback-driven system like PortAudio, the audio thread fires asynchronously. Global variables are dangerous here.
 
 
+### How to Distinguish Input vs. Output Devices
+
+In PortAudio, devices aren't strictly labeled as "Input Only" or "Output Only". Instead, PortAudio queries the operating system and tells you how many _channels_ a device supports for input and output.
+
+To determine a device's capabilities, you inspect the `PaDeviceInfo` struct:
+
+- **If `info->maxOutputChannels > 0`**: It can be used as an **Output Device** (Speakers, Headphones).
+- **If `info->maxInputChannels > 0`**: It can be used as an **Input Device** (Microphones, Line-In).
+
+_(Note: Some devices, like audio interfaces, will have both > 0, meaning they are full-duplex)._
